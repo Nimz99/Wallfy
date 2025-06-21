@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Access - Wallfy</title>
+    <meta http-equiv="refresh" content="0; url=login.html">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .redirect-message {
+            text-align: center;
+            padding: 2rem;
+        }
+        .redirect-message h1 {
+            margin-bottom: 1rem;
+        }
+        .redirect-message a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-message">
+        <h1>Redirecting to Admin Panel...</h1>
+        <p>If you're not redirected automatically, <a href="login.html">click here</a>.</p>
+    </div>
+</body>
+</html> 

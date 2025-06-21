@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallfy - Premium Wallpapers</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>Wallfy</h1>
+                </div>
+                <div class="nav-menu">
+                    <a href="#home" class="nav-link active">Home</a>
+                    <a href="#gallery" class="nav-link">Gallery</a>
+                    <a href="#categories" class="nav-link">Categories</a>
+                    <a href="#about" class="nav-link">About</a>
+                </div>
+                <div class="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Discover Amazing Wallpapers</h1>
+                    <p class="hero-subtitle">High-quality wallpapers for your devices. Free to download and use.</p>
+                    <div class="hero-buttons">
+                        <a href="#gallery" class="btn btn-primary">Explore Gallery</a>
+                        <a href="#categories" class="btn btn-secondary">Browse Categories</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="gallery">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Featured Wallpapers</h2>
+                    <p>Curated collection of stunning wallpapers</p>
+                </div>
+                
+                <div class="filter-buttons">
+                    <!-- Filter buttons will be dynamically generated -->
+                </div>
+
+                <div class="wallpaper-grid" id="wallpaperGrid">
+                    <!-- Wallpaper cards will be dynamically generated -->
+                </div>
+            </div>
+        </section>
+
+        <section id="categories" class="categories">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Categories</h2>
+                    <p>Find wallpapers by your favorite themes</p>
+                </div>
+                <div class="category-grid">
+                    <!-- Categories will be dynamically generated -->
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>About Wallfy</h2>
+                        <p>Wallfy is your go-to destination for high-quality wallpapers. We curate the best wallpapers from around the web and provide them in various resolutions for all your devices.</p>
+                        <p>All wallpapers are free to download and use. Simply click the view button to see the full image on Imgur, or use the download button to get the file directly from Google Drive.</p>
+                    </div>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <h3>1000+</h3>
+                            <p>Wallpapers</p>
+                        </div>
+                        <div class="stat">
+                            <h3>50+</h3>
+                            <p>Categories</p>
+                        </div>
+                        <div class="stat">
+                            <h3>10K+</h3>
+                            <p>Downloads</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Wallfy</h3>
+                    <p>Your premium wallpaper destination</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="#categories">Categories</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="login.html" style="font-size: 0.9rem; opacity: 0.7;">Admin Panel</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Wallfy. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal for wallpaper preview -->
+    <div id="wallpaperModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Wallpaper">
+                <div class="modal-info">
+                    <h3 id="modalTitle"></h3>
+                    <p id="modalCategory"></p>
+                    <div class="modal-buttons">
+                        <a id="viewButton" href="#" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-eye"></i> View on Imgur
+                        </a>
+                        <a id="downloadButton" href="#" target="_blank" class="btn btn-secondary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

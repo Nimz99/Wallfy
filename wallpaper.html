@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Wallpaper - Wallfy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .wallpaper-view-container {
+            max-width: 600px;
+            margin: 4rem auto 2rem auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.10);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .wallpaper-view-image {
+            width: 100%;
+            max-width: 400px;
+            max-height: 600px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .wallpaper-view-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .wallpaper-view-category {
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .wallpaper-view-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .wallpaper-view-actions .btn {
+            padding: 12px 32px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>Wallfy</h1>
+                </div>
+                <div class="nav-menu">
+                    <a href="index.html#home" class="nav-link">Home</a>
+                    <a href="index.html#gallery" class="nav-link">Gallery</a>
+                    <a href="index.html#categories" class="nav-link">Categories</a>
+                    <a href="index.html#about" class="nav-link">About</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="wallpaper-view-container" id="wallpaperView">
+            <!-- Wallpaper details will be loaded here -->
+        </div>
+    </main>
+    <script src="wallpaper-script.js"></script>
+</body>
+</html> 

@@ -2,154 +2,167 @@
 let wallpapers = [];
 let categories = [];
 
-// Load wallpapers from localStorage or use default data
-function loadWallpapers() {
-    const saved = localStorage.getItem('wallfy_wallpapers');
-    if (saved) {
-        wallpapers = JSON.parse(saved);
-    } else {
-        // Default sample data if no saved data exists
-        wallpapers = [
-            {
-                id: 1,
-                title: "Mountain Sunset",
-                category: "nature",
-                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample1", // Replace with actual Imgur link
-                downloadLink: "https://drive.google.com/sample1" // Replace with actual Google Drive link
-            },
-            {
-                id: 2,
-                title: "Abstract Waves",
-                category: "abstract",
-                image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample2",
-                downloadLink: "https://drive.google.com/sample2"
-            },
-            {
-                id: 3,
-                title: "Minimal Geometry",
-                category: "minimal",
-                image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample3",
-                downloadLink: "https://drive.google.com/sample3"
-            },
-            {
-                id: 4,
-                title: "Galaxy Nebula",
-                category: "space",
-                image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample4",
-                downloadLink: "https://drive.google.com/sample4"
-            },
-            {
-                id: 5,
-                title: "Forest Path",
-                category: "nature",
-                image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample5",
-                downloadLink: "https://drive.google.com/sample5"
-            },
-            {
-                id: 6,
-                title: "Colorful Gradient",
-                category: "abstract",
-                image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample6",
-                downloadLink: "https://drive.google.com/sample6"
-            },
-            {
-                id: 7,
-                title: "Clean Lines",
-                category: "minimal",
-                image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample7",
-                downloadLink: "https://drive.google.com/sample7"
-            },
-            {
-                id: 8,
-                title: "Starry Night",
-                category: "space",
-                image: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample8",
-                downloadLink: "https://drive.google.com/sample8"
-            },
-            {
-                id: 9,
-                title: "Ocean Waves",
-                category: "nature",
-                image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample9",
-                downloadLink: "https://drive.google.com/sample9"
-            },
-            {
-                id: 10,
-                title: "Digital Art",
-                category: "abstract",
-                image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample10",
-                downloadLink: "https://drive.google.com/sample10"
-            },
-            {
-                id: 11,
-                title: "Simple Design",
-                category: "minimal",
-                image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample11",
-                downloadLink: "https://drive.google.com/sample11"
-            },
-            {
-                id: 12,
-                title: "Cosmic Dust",
-                category: "space",
-                image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample12",
-                downloadLink: "https://drive.google.com/sample12"
+// Load wallpapers from Firebase or use default data
+async function loadWallpapers() {
+    try {
+        const snapshot = await db.collection('wallpapers').get();
+        if (!snapshot.empty) {
+            wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            // Load default sample data if no data exists
+            wallpapers = [
+                {
+                    id: 1,
+                    title: "Mountain Sunset",
+                    category: "nature",
+                    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample1", // Replace with actual Imgur link
+                    downloadLink: "https://drive.google.com/sample1" // Replace with actual Google Drive link
+                },
+                {
+                    id: 2,
+                    title: "Abstract Waves",
+                    category: "abstract",
+                    image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample2",
+                    downloadLink: "https://drive.google.com/sample2"
+                },
+                {
+                    id: 3,
+                    title: "Minimal Geometry",
+                    category: "minimal",
+                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample3",
+                    downloadLink: "https://drive.google.com/sample3"
+                },
+                {
+                    id: 4,
+                    title: "Galaxy Nebula",
+                    category: "space",
+                    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample4",
+                    downloadLink: "https://drive.google.com/sample4"
+                },
+                {
+                    id: 5,
+                    title: "Forest Path",
+                    category: "nature",
+                    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample5",
+                    downloadLink: "https://drive.google.com/sample5"
+                },
+                {
+                    id: 6,
+                    title: "Colorful Gradient",
+                    category: "abstract",
+                    image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample6",
+                    downloadLink: "https://drive.google.com/sample6"
+                },
+                {
+                    id: 7,
+                    title: "Clean Lines",
+                    category: "minimal",
+                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample7",
+                    downloadLink: "https://drive.google.com/sample7"
+                },
+                {
+                    id: 8,
+                    title: "Starry Night",
+                    category: "space",
+                    image: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample8",
+                    downloadLink: "https://drive.google.com/sample8"
+                },
+                {
+                    id: 9,
+                    title: "Ocean Waves",
+                    category: "nature",
+                    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample9",
+                    downloadLink: "https://drive.google.com/sample9"
+                },
+                {
+                    id: 10,
+                    title: "Digital Art",
+                    category: "abstract",
+                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample10",
+                    downloadLink: "https://drive.google.com/sample10"
+                },
+                {
+                    id: 11,
+                    title: "Simple Design",
+                    category: "minimal",
+                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample11",
+                    downloadLink: "https://drive.google.com/sample11"
+                },
+                {
+                    id: 12,
+                    title: "Cosmic Dust",
+                    category: "space",
+                    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample12",
+                    downloadLink: "https://drive.google.com/sample12"
+                }
+            ];
+            // Save default data to Firebase
+            for (let wallpaper of wallpapers) {
+                await db.collection('wallpapers').add(wallpaper);
             }
-        ];
-        // Save default data to localStorage
-        localStorage.setItem('wallfy_wallpapers', JSON.stringify(wallpapers));
+        }
+    } catch (error) {
+        console.error("Error loading wallpapers:", error);
     }
 }
 
-// Load categories from localStorage
-function loadCategories() {
-    const saved = localStorage.getItem('wallfy_categories');
-    if (saved) {
-        categories = JSON.parse(saved);
-    } else {
-        // Default categories
-        categories = [
-            {
-                id: 1,
-                name: 'nature',
-                displayName: 'Nature',
-                icon: 'fas fa-mountain',
-                description: 'Breathtaking landscapes and natural beauty'
-            },
-            {
-                id: 2,
-                name: 'abstract',
-                displayName: 'Abstract',
-                icon: 'fas fa-palette',
-                description: 'Creative and artistic designs'
-            },
-            {
-                id: 3,
-                name: 'minimal',
-                displayName: 'Minimal',
-                icon: 'fas fa-circle',
-                description: 'Clean and simple designs'
-            },
-            {
-                id: 4,
-                name: 'space',
-                displayName: 'Space',
-                icon: 'fas fa-rocket',
-                description: 'Cosmic and astronomical themes'
+// Load categories from Firebase
+async function loadCategories() {
+    try {
+        const snapshot = await db.collection('categories').get();
+        if (!snapshot.empty) {
+            categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            // Default categories
+            categories = [
+                {
+                    id: 1,
+                    name: 'nature',
+                    displayName: 'Nature',
+                    icon: 'fas fa-mountain',
+                    description: 'Breathtaking landscapes and natural beauty'
+                },
+                {
+                    id: 2,
+                    name: 'abstract',
+                    displayName: 'Abstract',
+                    icon: 'fas fa-palette',
+                    description: 'Creative and artistic designs'
+                },
+                {
+                    id: 3,
+                    name: 'minimal',
+                    displayName: 'Minimal',
+                    icon: 'fas fa-circle',
+                    description: 'Clean and simple designs'
+                },
+                {
+                    id: 4,
+                    name: 'space',
+                    displayName: 'Space',
+                    icon: 'fas fa-rocket',
+                    description: 'Cosmic and astronomical themes'
+                }
+            ];
+            // Save default categories to Firebase
+            for (let category of categories) {
+                await db.collection('categories').add(category);
             }
-        ];
-        localStorage.setItem('wallfy_categories', JSON.stringify(categories));
+        }
+    } catch (error) {
+        console.error("Error loading categories:", error);
     }
 }
 
@@ -171,15 +184,39 @@ const navLinks = document.querySelectorAll('.nav-link');
 let currentFilter = 'all';
 
 // Initialize the website
-document.addEventListener('DOMContentLoaded', function() {
-    loadWallpapers();
-    loadCategories();
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadWallpapers();
+    await loadCategories();
     renderWallpapers();
     renderFilterButtons();
     renderCategoriesSection();
     setupEventListeners();
     setupSmoothScrolling();
+    setupRealtimeListeners();
 });
+
+// Setup real-time listeners for live updates
+function setupRealtimeListeners() {
+    // Listen for wallpaper changes
+    db.collection('wallpapers').onSnapshot((snapshot) => {
+        wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderWallpapers();
+        renderFilterButtons();
+    });
+
+    // Listen for category changes
+    db.collection('categories').onSnapshot((snapshot) => {
+        categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderFilterButtons();
+        renderCategoriesSection();
+    });
+}
+
+// Get category display name
+function getCategoryDisplayName(categoryName) {
+    const category = categories.find(c => c.name === categoryName);
+    return category ? category.displayName : categoryName;
+}
 
 // Render filter buttons dynamically based on categories
 function renderFilterButtons() {
@@ -203,34 +240,28 @@ function renderFilterButtons() {
     });
 }
 
-// Render wallpapers based on current filter
+// Render wallpapers
 function renderWallpapers() {
     const filteredWallpapers = currentFilter === 'all' 
         ? wallpapers 
         : wallpapers.filter(wallpaper => wallpaper.category === currentFilter);
 
-    wallpaperGrid.innerHTML = filteredWallpapers.map(wallpaper => {
-        const category = categories.find(c => c.name === wallpaper.category);
-        const categoryDisplayName = category ? category.displayName : wallpaper.category;
-        
-        return `
-            <div class="wallpaper-card" data-id="${wallpaper.id}">
-                <img src="${wallpaper.image}" alt="${wallpaper.title}" class="wallpaper-image">
-                <div class="wallpaper-info">
-                    <h3 class="wallpaper-title">${wallpaper.title}</h3>
-                    <p class="wallpaper-category">${categoryDisplayName}</p>
-                    <div class="wallpaper-actions">
-                        <a class="btn btn-primary view-btn" href="wallpaper.html?id=${wallpaper.id}">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                    </div>
+    wallpaperGrid.innerHTML = filteredWallpapers.map(wallpaper => `
+        <div class="wallpaper-card">
+            <div class="wallpaper-image">
+                <img src="${wallpaper.image}" alt="${wallpaper.title}" loading="lazy">
+                <div class="wallpaper-overlay">
+                    <a href="wallpaper.html?id=${wallpaper.id}" class="btn btn-primary">
+                        <i class="fas fa-eye"></i> View
+                    </a>
                 </div>
             </div>
-        `;
-    }).join('');
-
-    // Add event listeners to new buttons
-    addWallpaperEventListeners();
+            <div class="wallpaper-info">
+                <h3>${wallpaper.title}</h3>
+                <p>${getCategoryDisplayName(wallpaper.category)}</p>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Add event listeners to wallpaper cards

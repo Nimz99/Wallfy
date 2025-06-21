@@ -5,7 +5,7 @@ let nextId = 1;
 let nextCategoryId = 1;
 
 // Check authentication on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Check if user is logged in
     const isLoggedIn = localStorage.getItem('wallfy_admin_logged_in');
     if (isLoggedIn !== 'true') {
@@ -29,63 +29,124 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // User is authenticated, initialize admin panel
-    loadWallpapers();
-    loadCategories();
+    await loadWallpapers();
+    await loadCategories();
     setupEventListeners();
     updateDashboard();
     loadManageTable();
     loadCategoriesTable();
     updateUserInfo();
+    setupRealtimeListeners();
 });
 
-// Load categories from localStorage
-function loadCategories() {
-    const saved = localStorage.getItem('wallfy_categories');
-    if (saved) {
-        categories = JSON.parse(saved);
-        if (categories.length > 0) {
-            nextCategoryId = Math.max(...categories.map(c => c.id)) + 1;
-        }
-    } else {
-        // Default categories
-        categories = [
-            {
-                id: 1,
-                name: 'nature',
-                displayName: 'Nature',
-                icon: 'fas fa-mountain',
-                description: 'Breathtaking landscapes and natural beauty'
-            },
-            {
-                id: 2,
-                name: 'abstract',
-                displayName: 'Abstract',
-                icon: 'fas fa-palette',
-                description: 'Creative and artistic designs'
-            },
-            {
-                id: 3,
-                name: 'minimal',
-                displayName: 'Minimal',
-                icon: 'fas fa-circle',
-                description: 'Clean and simple designs'
-            },
-            {
-                id: 4,
-                name: 'space',
-                displayName: 'Space',
-                icon: 'fas fa-rocket',
-                description: 'Cosmic and astronomical themes'
+// Load categories from Firebase
+async function loadCategories() {
+    try {
+        const snapshot = await db.collection('categories').get();
+        if (!snapshot.empty) {
+            categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (categories.length > 0) {
+                nextCategoryId = Math.max(...categories.map(c => parseInt(c.id))) + 1;
             }
-        ];
-        nextCategoryId = 5;
-        saveCategories();
+        } else {
+            // Default categories
+            categories = [
+                {
+                    id: 1,
+                    name: 'nature',
+                    displayName: 'Nature',
+                    icon: 'fas fa-mountain',
+                    description: 'Breathtaking landscapes and natural beauty'
+                },
+                {
+                    id: 2,
+                    name: 'abstract',
+                    displayName: 'Abstract',
+                    icon: 'fas fa-palette',
+                    description: 'Creative and artistic designs'
+                },
+                {
+                    id: 3,
+                    name: 'minimal',
+                    displayName: 'Minimal',
+                    icon: 'fas fa-circle',
+                    description: 'Clean and simple designs'
+                },
+                {
+                    id: 4,
+                    name: 'space',
+                    displayName: 'Space',
+                    icon: 'fas fa-rocket',
+                    description: 'Cosmic and astronomical themes'
+                }
+            ];
+            nextCategoryId = 5;
+            // Save default categories to Firebase
+            for (let category of categories) {
+                await db.collection('categories').add(category);
+            }
+        }
+    } catch (error) {
+        console.error("Error loading categories:", error);
     }
 }
 
-// Save categories to localStorage
-function saveCategories() {
-    localStorage.setItem('wallfy_categories', JSON.stringify(categories));
+// Load wallpapers from Firebase
+async function loadWallpapers() {
+    try {
+        const snapshot = await db.collection('wallpapers').get();
+        if (!snapshot.empty) {
+            wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Find the highest ID to set nextId
+            if (wallpapers.length > 0) {
+                nextId = Math.max(...wallpapers.map(w => parseInt(w.id))) + 1;
+            }
+        } else {
+            // Load sample data if no saved data exists
+            wallpapers = [
+                {
+                    id: 1,
+                    title: "Mountain Sunset",
+                    category: "nature",
+                    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample1",
+                    downloadLink: "https://drive.google.com/sample1"
+                },
+                {
+                    id: 2,
+                    title: "Abstract Waves",
+                    category: "abstract",
+                    image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
+                    imgurLink: "https://imgur.com/sample2",
+                    downloadLink: "https://drive.google.com/sample2"
+                }
+            ];
+            nextId = 3;
+            // Save default data to Firebase
+            for (let wallpaper of wallpapers) {
+                await db.collection('wallpapers').add(wallpaper);
+            }
+        }
+    } catch (error) {
+        console.error("Error loading wallpapers:", error);
+    }
+}
+
+// Setup real-time listeners for live updates
+function setupRealtimeListeners() {
+    // Listen for wallpaper changes
+    db.collection('wallpapers').onSnapshot((snapshot) => {
+        wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadManageTable();
+        updateDashboard();
+    });
+
+    // Listen for category changes
+    db.collection('categories').onSnapshot((snapshot) => {
+        categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadCategoriesTable();
+        updateCategoryDropdowns();
+    });
 }
 
 // Update user info in sidebar
@@ -121,52 +182,16 @@ function logout() {
     window.location.href = 'login.html';
 }
 
-// Load wallpapers from localStorage
-function loadWallpapers() {
-    const saved = localStorage.getItem('wallfy_wallpapers');
-    if (saved) {
-        wallpapers = JSON.parse(saved);
-        // Find the highest ID to set nextId
-        if (wallpapers.length > 0) {
-            nextId = Math.max(...wallpapers.map(w => w.id)) + 1;
-        }
-    } else {
-        // Load sample data if no saved data exists
-        wallpapers = [
-            {
-                id: 1,
-                title: "Mountain Sunset",
-                category: "nature",
-                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample1",
-                downloadLink: "https://drive.google.com/sample1"
-            },
-            {
-                id: 2,
-                title: "Abstract Waves",
-                category: "abstract",
-                image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
-                imgurLink: "https://imgur.com/sample2",
-                downloadLink: "https://drive.google.com/sample2"
-            }
-        ];
-        nextId = 3;
-        saveWallpapers();
-    }
+// Save wallpapers to Firebase
+async function saveWallpapers() {
+    // This function is now handled by real-time listeners
+    // Individual operations are done directly with Firebase
 }
 
-// Save wallpapers to localStorage
-function saveWallpapers() {
-    localStorage.setItem('wallfy_wallpapers', JSON.stringify(wallpapers));
-    // Also update the main website's script.js file
-    updateMainScript();
-}
-
-// Update the main script.js file with current wallpaper data
-function updateMainScript() {
-    // This would typically be done server-side, but for demo purposes
-    // we'll just show a message that the data has been updated
-    showMessage('Wallpaper data updated successfully!', 'success');
+// Save categories to Firebase
+async function saveCategories() {
+    // This function is now handled by real-time listeners
+    // Individual operations are done directly with Firebase
 }
 
 // Setup event listeners
@@ -265,7 +290,7 @@ function updateCategoryDropdowns() {
 }
 
 // Handle category form submission
-function handleCategoryFormSubmit(e) {
+async function handleCategoryFormSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
@@ -286,27 +311,27 @@ function handleCategoryFormSubmit(e) {
         return;
     }
     
-    // Add category
-    const category = {
-        id: nextCategoryId++,
-        name: categoryName,
-        displayName: displayName,
-        icon: icon,
-        description: description
-    };
-    
-    categories.push(category);
-    saveCategories();
-    
-    // Reset form
-    resetCategoryForm();
-    
-    // Update tables and dropdowns
-    loadCategoriesTable();
-    updateCategoryDropdowns();
-    
-    // Show success message
-    showMessage('Category added successfully!', 'success');
+    try {
+        // Add category to Firebase
+        const category = {
+            id: nextCategoryId++,
+            name: categoryName,
+            displayName: displayName,
+            icon: icon,
+            description: description
+        };
+        
+        await db.collection('categories').add(category);
+        
+        // Reset form
+        resetCategoryForm();
+        
+        // Show success message
+        showMessage('Category added successfully!', 'success');
+    } catch (error) {
+        console.error("Error adding category:", error);
+        showMessage('Error adding category', 'error');
+    }
 }
 
 // Reset category form
@@ -362,8 +387,8 @@ function editCategory(id) {
 }
 
 // Save category edit
-function saveCategoryEdit() {
-    const id = parseInt(document.getElementById('editCategoryId').value);
+async function saveCategoryEdit() {
+    const id = document.getElementById('editCategoryId').value;
     const category = categories.find(c => c.id === id);
     
     if (!category) return;
@@ -381,25 +406,29 @@ function saveCategoryEdit() {
         return;
     }
     
-    category.name = newName;
-    category.displayName = newDisplayName;
-    category.icon = newIcon;
-    category.description = newDescription;
-    
-    // Update wallpapers that use this category
-    wallpapers.forEach(wallpaper => {
-        if (wallpaper.category === category.name) {
-            wallpaper.category = newName;
-        }
-    });
-    
-    // Save and update
-    saveCategories();
-    saveWallpapers();
-    loadCategoriesTable();
-    updateCategoryDropdowns();
-    closeEditCategoryModal();
-    showMessage('Category updated successfully!', 'success');
+    try {
+        // Update category in Firebase
+        await db.collection('categories').doc(id).update({
+            name: newName,
+            displayName: newDisplayName,
+            icon: newIcon,
+            description: newDescription
+        });
+        
+        // Update wallpapers that use this category
+        const wallpaperSnapshot = await db.collection('wallpapers').where('category', '==', category.name).get();
+        const batch = db.batch();
+        wallpaperSnapshot.docs.forEach(doc => {
+            batch.update(doc.ref, { category: newName });
+        });
+        await batch.commit();
+        
+        closeEditCategoryModal();
+        showMessage('Category updated successfully!', 'success');
+    } catch (error) {
+        console.error("Error updating category:", error);
+        showMessage('Error updating category', 'error');
+    }
 }
 
 // Close edit category modal
@@ -408,7 +437,7 @@ function closeEditCategoryModal() {
 }
 
 // Delete category
-function deleteCategory(id) {
+async function deleteCategory(id) {
     const category = categories.find(c => c.id === id);
     if (!category) return;
     
@@ -419,29 +448,31 @@ function deleteCategory(id) {
             return;
         }
         
-        // Remove category from wallpapers
-        wallpapers.forEach(wallpaper => {
-            if (wallpaper.category === category.name) {
-                wallpaper.category = 'uncategorized';
-            }
-        });
-        saveWallpapers();
+        try {
+            // Remove category from wallpapers
+            const wallpaperSnapshot = await db.collection('wallpapers').where('category', '==', category.name).get();
+            const batch = db.batch();
+            wallpaperSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { category: 'uncategorized' });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error updating wallpapers:", error);
+        }
     }
     
-    // Delete category
-    categories = categories.filter(c => c.id !== id);
-    saveCategories();
-    
-    // Update tables and dropdowns
-    loadCategoriesTable();
-    updateCategoryDropdowns();
-    updateDashboard();
-    
-    showMessage('Category deleted successfully!', 'success');
+    try {
+        // Delete category from Firebase
+        await db.collection('categories').doc(id).delete();
+        showMessage('Category deleted successfully!', 'success');
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        showMessage('Error deleting category', 'error');
+    }
 }
 
 // Handle form submission
-function handleFormSubmit(e) {
+async function handleFormSubmit(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
@@ -460,18 +491,19 @@ function handleFormSubmit(e) {
         return;
     }
 
-    // Add wallpaper to array
-    wallpapers.push(wallpaper);
-    saveWallpapers();
+    try {
+        // Add wallpaper to Firebase
+        await db.collection('wallpapers').add(wallpaper);
+        
+        // Reset form
+        resetForm();
 
-    // Reset form
-    resetForm();
-
-    // Show success message
-    showMessage('Wallpaper added successfully!', 'success');
-
-    // Update dashboard
-    updateDashboard();
+        // Show success message
+        showMessage('Wallpaper added successfully!', 'success');
+    } catch (error) {
+        console.error("Error adding wallpaper:", error);
+        showMessage('Error adding wallpaper', 'error');
+    }
 }
 
 // Reset form
@@ -576,25 +608,28 @@ function editWallpaper(id) {
 }
 
 // Save edit
-function saveEdit() {
-    const id = parseInt(document.getElementById('editId').value);
+async function saveEdit() {
+    const id = document.getElementById('editId').value;
     const wallpaper = wallpapers.find(w => w.id === id);
     
     if (!wallpaper) return;
 
-    // Update wallpaper data
-    wallpaper.title = document.getElementById('editTitle').value;
-    wallpaper.category = document.getElementById('editCategory').value;
-    wallpaper.image = document.getElementById('editImage').value;
-    wallpaper.imgurLink = document.getElementById('editImgurLink').value;
-    wallpaper.downloadLink = document.getElementById('editDownloadLink').value;
-
-    // Save and update
-    saveWallpapers();
-    loadManageTable();
-    updateDashboard();
-    closeEditModal();
-    showMessage('Wallpaper updated successfully!', 'success');
+    try {
+        // Update wallpaper in Firebase
+        await db.collection('wallpapers').doc(id).update({
+            title: document.getElementById('editTitle').value,
+            category: document.getElementById('editCategory').value,
+            image: document.getElementById('editImage').value,
+            imgurLink: document.getElementById('editImgurLink').value,
+            downloadLink: document.getElementById('editDownloadLink').value
+        });
+        
+        closeEditModal();
+        showMessage('Wallpaper updated successfully!', 'success');
+    } catch (error) {
+        console.error("Error updating wallpaper:", error);
+        showMessage('Error updating wallpaper', 'error');
+    }
 }
 
 // Close edit modal
@@ -603,13 +638,15 @@ function closeEditModal() {
 }
 
 // Delete wallpaper
-function deleteWallpaper(id) {
+async function deleteWallpaper(id) {
     if (confirm('Are you sure you want to delete this wallpaper?')) {
-        wallpapers = wallpapers.filter(w => w.id !== id);
-        saveWallpapers();
-        loadManageTable();
-        updateDashboard();
-        showMessage('Wallpaper deleted successfully!', 'success');
+        try {
+            await db.collection('wallpapers').doc(id).delete();
+            showMessage('Wallpaper deleted successfully!', 'success');
+        } catch (error) {
+            console.error("Error deleting wallpaper:", error);
+            showMessage('Error deleting wallpaper', 'error');
+        }
     }
 }
 

@@ -373,7 +373,10 @@ async function saveCategoryEdit() {
     const id = document.getElementById('editCategoryId').value;
     const category = categories.find(c => c.id === id);
     
-    if (!category) return;
+    if (!id) {
+        showMessage('Cannot update category: No ID found.', 'error');
+        return;
+    }
     
     // Update category data
     const newDisplayName = document.getElementById('editCategoryName').value.trim();
@@ -399,11 +402,13 @@ async function saveCategoryEdit() {
         
         // Update wallpapers that use this category
         const wallpaperSnapshot = await db.collection('wallpapers').where('category', '==', category.name).get();
-        const batch = db.batch();
-        wallpaperSnapshot.docs.forEach(doc => {
-            batch.update(doc.ref, { category: newName });
-        });
-        await batch.commit();
+        if (!wallpaperSnapshot.empty) {
+            const batch = db.batch();
+            wallpaperSnapshot.docs.forEach(doc => {
+                batch.update(doc.ref, { category: newName });
+            });
+            await batch.commit();
+        }
         
         closeEditCategoryModal();
         showMessage('Category updated successfully!', 'success');
@@ -421,35 +426,50 @@ function closeEditCategoryModal() {
 // Delete category
 async function deleteCategory(id) {
     const category = categories.find(c => c.id === id);
-    if (!category) return;
-    
-    // Check if category has wallpapers
-    const wallpaperCount = wallpapers.filter(w => w.category === category.name).length;
-    if (wallpaperCount > 0) {
-        if (!confirm(`This category has ${wallpaperCount} wallpaper(s). Deleting it will remove the category from all wallpapers. Continue?`)) {
-            return;
-        }
-        
-        try {
-            // Remove category from wallpapers
-            const wallpaperSnapshot = await db.collection('wallpapers').where('category', '==', category.name).get();
-            const batch = db.batch();
-            wallpaperSnapshot.docs.forEach(doc => {
-                batch.update(doc.ref, { category: 'uncategorized' });
-            });
-            await batch.commit();
-        } catch (error) {
-            console.error("Error updating wallpapers:", error);
-        }
+    if (!category) {
+        console.error("Cannot delete category, ID not found:", id);
+        return;
     }
     
     try {
+        // Check if the category is in use
+        const wallpaperCount = wallpapers.filter(w => w.category === category.name).length;
+        if (wallpaperCount > 0) {
+            if (!confirm(`This category has ${wallpaperCount} wallpaper(s). Deleting it will reassign them to 'Uncategorized'. Continue?`)) {
+                return;
+            }
+            
+            // Reassign wallpapers in Firebase
+            const wallpaperSnapshot = await db.collection('wallpapers').where('category', '==', category.name).get();
+            if (!wallpaperSnapshot.empty) {
+                const batch = db.batch();
+                wallpaperSnapshot.docs.forEach(doc => {
+                    batch.update(doc.ref, { category: 'uncategorized' });
+                });
+                await batch.commit();
+            }
+
+            // Manually update local state for immediate UI feedback
+            wallpapers.forEach(w => {
+                if (w.category === category.name) w.category = 'uncategorized';
+            });
+            loadManageTable();
+        }
+        
         // Delete category from Firebase
         await db.collection('categories').doc(id).delete();
+        
+        // Manually update local state and UI
+        categories = categories.filter(c => c.id !== id);
+        loadCategoriesTable();
+        updateCategoryDropdowns();
+        updateDashboard();
+        
         showMessage('Category deleted successfully!', 'success');
+
     } catch (error) {
         console.error("Error deleting category:", error);
-        showMessage('Error deleting category', 'error');
+        showMessage('Error deleting category. See console for details.', 'error');
     }
 }
 
@@ -591,9 +611,11 @@ function editWallpaper(id) {
 // Save edit
 async function saveEdit() {
     const id = document.getElementById('editId').value;
-    const wallpaper = wallpapers.find(w => w.id === id);
     
-    if (!wallpaper) return;
+    if (!id) {
+        showMessage('Cannot update wallpaper: No ID found.', 'error');
+        return;
+    }
 
     try {
         // Update wallpaper in Firebase
@@ -609,7 +631,7 @@ async function saveEdit() {
         showMessage('Wallpaper updated successfully!', 'success');
     } catch (error) {
         console.error("Error updating wallpaper:", error);
-        showMessage('Error updating wallpaper', 'error');
+        showMessage('Error updating wallpaper. See console for details.', 'error');
     }
 }
 
@@ -620,13 +642,25 @@ function closeEditModal() {
 
 // Delete wallpaper
 async function deleteWallpaper(id) {
+    if (!id) {
+        console.error("Delete failed: No ID provided.");
+        showMessage('Error: Invalid wallpaper ID.', 'error');
+        return;
+    }
+
     if (confirm('Are you sure you want to delete this wallpaper?')) {
         try {
             await db.collection('wallpapers').doc(id).delete();
+            
+            // Manually update local state for immediate UI feedback
+            wallpapers = wallpapers.filter(w => w.id !== id);
+            loadManageTable();
+            updateDashboard();
+
             showMessage('Wallpaper deleted successfully!', 'success');
         } catch (error) {
             console.error("Error deleting wallpaper:", error);
-            showMessage('Error deleting wallpaper', 'error');
+            showMessage('Error deleting wallpaper. See console for details.', 'error');
         }
     }
 }

@@ -1,110 +1,74 @@
-// Sample wallpaper data - you can replace these with your actual wallpaper data
+// Data arrays
 let wallpapers = [];
 let categories = [];
 
-// Load wallpapers from Firebase or use default data
-async function loadWallpapers() {
-    try {
-        const snapshot = await db.collection('wallpapers').orderBy('title').get();
-        if (!snapshot.empty) {
-            wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+// Initialize the website
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setupSmoothScrolling();
+    setupRealtimeListeners();
+});
+
+// Setup real-time listeners for live updates
+function setupRealtimeListeners() {
+    // Listen for wallpaper changes
+    db.collection('wallpapers').orderBy('title').onSnapshot(async (snapshot) => {
+        if (snapshot.empty) {
+            // If no wallpapers, seed the database with default data
+            await seedDefaultWallpapers();
         } else {
-            // Load default sample data if no data exists
-            const defaultWallpapers = [
-                {
-                    title: "Mountain Sunset",
-                    category: "nature",
-                    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample1",
-                    downloadLink: "https://drive.google.com/sample1"
-                },
-                {
-                    title: "Abstract Waves",
-                    category: "abstract",
-                    image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample2",
-                    downloadLink: "https://drive.google.com/sample2"
-                },
-                {
-                    title: "Minimal Geometry",
-                    category: "minimal",
-                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample3",
-                    downloadLink: "https://drive.google.com/sample3"
-                },
-                {
-                    title: "Galaxy Nebula",
-                    category: "space",
-                    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample4",
-                    downloadLink: "https://drive.google.com/sample4"
-                },
-                {
-                    title: "Forest Path",
-                    category: "nature",
-                    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample5",
-                    downloadLink: "https://drive.google.com/sample5"
-                },
-                {
-                    title: "Colorful Gradient",
-                    category: "abstract",
-                    image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample6",
-                    downloadLink: "https://drive.google.com/sample6"
-                }
-            ];
-            // Save default data to Firebase
-            for (let wallpaper of defaultWallpapers) {
-                await db.collection('wallpapers').add(wallpaper);
-            }
+            wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+            renderWallpapers();
         }
-    } catch (error) {
-        console.error("Error loading wallpapers:", error);
+    });
+
+    // Listen for category changes
+    db.collection('categories').orderBy('displayName').onSnapshot(async (snapshot) => {
+        if (snapshot.empty) {
+            // If no categories, seed the database
+            await seedDefaultCategories();
+        } else {
+            categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+            renderFilterButtons();
+            renderCategoriesSection();
+        }
+    });
+}
+
+// Seed database with default wallpapers if empty
+async function seedDefaultWallpapers() {
+    const defaultWallpapers = [
+        {
+            title: "Mountain Sunset",
+            category: "nature",
+            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
+            imgurLink: "https://imgur.com/sample1",
+            downloadLink: "https://drive.google.com/sample1"
+        },
+        {
+            title: "Abstract Waves",
+            category: "abstract",
+            image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
+            imgurLink: "https://imgur.com/sample2",
+            downloadLink: "https://drive.google.com/sample2"
+        },
+        // Add more default wallpapers if needed
+    ];
+    for (let wallpaper of defaultWallpapers) {
+        await db.collection('wallpapers').add(wallpaper);
     }
 }
 
-// Load categories from Firebase
-async function loadCategories() {
-    try {
-        const snapshot = await db.collection('categories').orderBy('displayName').get();
-        if (!snapshot.empty) {
-            categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        } else {
-            // Default categories
-            const defaultCategories = [
-                {
-                    name: 'nature',
-                    displayName: 'Nature',
-                    icon: 'fas fa-mountain',
-                    description: 'Breathtaking landscapes and natural beauty'
-                },
-                {
-                    name: 'abstract',
-                    displayName: 'Abstract',
-                    icon: 'fas fa-palette',
-                    description: 'Creative and artistic designs'
-                },
-                {
-                    name: 'minimal',
-                    displayName: 'Minimal',
-                    icon: 'fas fa-circle',
-                    description: 'Clean and simple designs'
-                },
-                {
-                    name: 'space',
-                    displayName: 'Space',
-                    icon: 'fas fa-rocket',
-                    description: 'Cosmic and astronomical themes'
-                }
-            ];
-            // Save default categories to Firebase
-            for (let category of defaultCategories) {
-                await db.collection('categories').add(category);
-            }
-        }
-    } catch (error) {
-        console.error("Error loading categories:", error);
+// Seed database with default categories if empty
+async function seedDefaultCategories() {
+    const defaultCategories = [
+        { name: 'nature', displayName: 'Nature', icon: 'fas fa-mountain', description: 'Breathtaking landscapes' },
+        { name: 'abstract', displayName: 'Abstract', icon: 'fas fa-palette', description: 'Creative and artistic designs' },
+        { name: 'minimal', displayName: 'Minimal', icon: 'fas fa-circle', description: 'Clean and simple designs' },
+        { name: 'space', displayName: 'Space', icon: 'fas fa-rocket', description: 'Cosmic and astronomical themes' }
+    ];
+    for (let category of defaultCategories) {
+        await db.collection('categories').add(category);
     }
 }
 
@@ -124,34 +88,6 @@ const navLinks = document.querySelectorAll('.nav-link');
 
 // Current filter
 let currentFilter = 'all';
-
-// Initialize the website
-document.addEventListener('DOMContentLoaded', async function() {
-    await loadWallpapers();
-    await loadCategories();
-    renderWallpapers();
-    renderFilterButtons();
-    renderCategoriesSection();
-    setupEventListeners();
-    setupSmoothScrolling();
-    setupRealtimeListeners();
-});
-
-// Setup real-time listeners for live updates
-function setupRealtimeListeners() {
-    // Listen for wallpaper changes
-    db.collection('wallpapers').onSnapshot((snapshot) => {
-        wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        renderWallpapers();
-    });
-
-    // Listen for category changes
-    db.collection('categories').onSnapshot((snapshot) => {
-        categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        renderFilterButtons();
-        renderCategoriesSection();
-    });
-}
 
 // Get category display name
 function getCategoryDisplayName(categoryName) {

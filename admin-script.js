@@ -1,8 +1,6 @@
 // Admin Panel JavaScript
 let wallpapers = [];
 let categories = [];
-let nextId = 1;
-let nextCategoryId = 1;
 
 // Check authentication on page load
 document.addEventListener('DOMContentLoaded', async function() {
@@ -42,47 +40,39 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Load categories from Firebase
 async function loadCategories() {
     try {
-        const snapshot = await db.collection('categories').get();
+        const snapshot = await db.collection('categories').orderBy('displayName').get();
         if (!snapshot.empty) {
-            categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (categories.length > 0) {
-                nextCategoryId = Math.max(...categories.map(c => parseInt(c.id))) + 1;
-            }
+            categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         } else {
             // Default categories
-            categories = [
+            const defaultCategories = [
                 {
-                    id: 1,
                     name: 'nature',
                     displayName: 'Nature',
                     icon: 'fas fa-mountain',
                     description: 'Breathtaking landscapes and natural beauty'
                 },
                 {
-                    id: 2,
                     name: 'abstract',
                     displayName: 'Abstract',
                     icon: 'fas fa-palette',
                     description: 'Creative and artistic designs'
                 },
                 {
-                    id: 3,
                     name: 'minimal',
                     displayName: 'Minimal',
                     icon: 'fas fa-circle',
                     description: 'Clean and simple designs'
                 },
                 {
-                    id: 4,
                     name: 'space',
                     displayName: 'Space',
                     icon: 'fas fa-rocket',
                     description: 'Cosmic and astronomical themes'
                 }
             ];
-            nextCategoryId = 5;
             // Save default categories to Firebase
-            for (let category of categories) {
+            for (let category of defaultCategories) {
                 await db.collection('categories').add(category);
             }
         }
@@ -94,18 +84,13 @@ async function loadCategories() {
 // Load wallpapers from Firebase
 async function loadWallpapers() {
     try {
-        const snapshot = await db.collection('wallpapers').get();
+        const snapshot = await db.collection('wallpapers').orderBy('title').get();
         if (!snapshot.empty) {
-            wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Find the highest ID to set nextId
-            if (wallpapers.length > 0) {
-                nextId = Math.max(...wallpapers.map(w => parseInt(w.id))) + 1;
-            }
+            wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         } else {
             // Load sample data if no saved data exists
-            wallpapers = [
+            const defaultWallpapers = [
                 {
-                    id: 1,
                     title: "Mountain Sunset",
                     category: "nature",
                     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
@@ -113,7 +98,6 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample1"
                 },
                 {
-                    id: 2,
                     title: "Abstract Waves",
                     category: "abstract",
                     image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
@@ -121,9 +105,8 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample2"
                 }
             ];
-            nextId = 3;
             // Save default data to Firebase
-            for (let wallpaper of wallpapers) {
+            for (let wallpaper of defaultWallpapers) {
                 await db.collection('wallpapers').add(wallpaper);
             }
         }
@@ -300,7 +283,7 @@ async function handleCategoryFormSubmit(e) {
     const description = formData.get('description') || '';
     
     // Validate required fields
-    if (!categoryName || !icon) {
+    if (!displayName || !icon) {
         showMessage('Please fill in all required fields', 'error');
         return;
     }
@@ -314,7 +297,6 @@ async function handleCategoryFormSubmit(e) {
     try {
         // Add category to Firebase
         const category = {
-            id: nextCategoryId++,
             name: categoryName,
             displayName: displayName,
             icon: icon,
@@ -358,10 +340,10 @@ function loadCategoriesTable() {
             <td class="category-count-cell">${wallpaperCount}</td>
             <td>
                 <div class="category-actions">
-                    <button class="btn btn-primary btn-sm" onclick="editCategory(${category.id})">
+                    <button class="btn btn-primary btn-sm" onclick="editCategory('${category.id}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory('${category.id}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -477,7 +459,6 @@ async function handleFormSubmit(e) {
     
     const formData = new FormData(e.target);
     const wallpaper = {
-        id: nextId++,
         title: formData.get('title'),
         category: formData.get('category'),
         image: formData.get('image'),
@@ -537,17 +518,17 @@ function loadManageTable() {
         row.innerHTML = `
             <td><img src="${wallpaper.image}" alt="${wallpaper.title}" onerror="this.src='https://via.placeholder.com/60x80?text=Error'"></td>
             <td>${wallpaper.title}</td>
-            <td><span class="category-badge ${wallpaper.category}">${wallpaper.category}</span></td>
+            <td><span class="category-badge ${wallpaper.category}">${getCategoryDisplayName(wallpaper.category)}</span></td>
             <td>
                 ${wallpaper.imgurLink ? `<a href="${wallpaper.imgurLink}" target="_blank" class="btn btn-secondary btn-sm">View</a>` : ''}
                 ${wallpaper.downloadLink ? `<a href="${wallpaper.downloadLink}" target="_blank" class="btn btn-secondary btn-sm">Download</a>` : ''}
             </td>
             <td>
                 <div class="table-actions">
-                    <button class="btn btn-primary btn-sm" onclick="editWallpaper(${wallpaper.id})">
+                    <button class="btn btn-primary btn-sm" onclick="editWallpaper('${wallpaper.id}')">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteWallpaper(${wallpaper.id})">
+                    <button class="btn btn-danger btn-sm" onclick="deleteWallpaper('${wallpaper.id}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
@@ -652,14 +633,14 @@ async function deleteWallpaper(id) {
 
 // Export data
 function exportData() {
-    const data = {
-        wallpapers: wallpapers,
-        categories: categories,
+    const dataToExport = {
+        wallpapers: wallpapers.map(({ id, ...rest }) => rest), // Exclude Firebase ID
+        categories: categories.map(({ id, ...rest }) => rest), // Exclude Firebase ID
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '2.0' // New version for compatibility
     };
     
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -678,58 +659,64 @@ function backupData() {
 }
 
 // Handle restore file
-function handleRestoreFile(e) {
+async function handleRestoreFile(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(event) {
         try {
-            const data = JSON.parse(e.target.result);
-            if (data.wallpapers && Array.isArray(data.wallpapers)) {
-                wallpapers = data.wallpapers;
-                // Update nextId
-                if (wallpapers.length > 0) {
-                    nextId = Math.max(...wallpapers.map(w => w.id)) + 1;
-                }
-            }
+            const data = JSON.parse(event.target.result);
             
-            if (data.categories && Array.isArray(data.categories)) {
-                categories = data.categories;
-                // Update nextCategoryId
-                if (categories.length > 0) {
-                    nextCategoryId = Math.max(...categories.map(c => c.id)) + 1;
-                }
-            }
-            
-            saveWallpapers();
-            saveCategories();
-            loadManageTable();
-            loadCategoriesTable();
-            updateDashboard();
-            updateCategoryDropdowns();
+            // Clear existing data first
+            await clearAllData(false); // Pass false to avoid confirmation prompt
+
+            const wallpaperPromises = (data.wallpapers || []).map(w => db.collection('wallpapers').add(w));
+            const categoryPromises = (data.categories || []).map(c => db.collection('categories').add(c));
+
+            await Promise.all([...wallpaperPromises, ...categoryPromises]);
+
             showMessage('Data restored successfully!', 'success');
         } catch (error) {
-            showMessage('Error reading backup file', 'error');
+            console.error("Error restoring data:", error);
+            showMessage('Error reading backup file. Make sure it is a valid JSON backup.', 'error');
         }
     };
     reader.readAsText(file);
 }
 
 // Clear all data
-function clearAllData() {
-    if (confirm('Are you sure you want to clear all wallpaper and category data? This action cannot be undone.')) {
-        wallpapers = [];
-        categories = [];
-        nextId = 1;
-        nextCategoryId = 1;
-        saveWallpapers();
-        saveCategories();
-        loadManageTable();
-        loadCategoriesTable();
-        updateDashboard();
-        updateCategoryDropdowns();
-        showMessage('All data cleared successfully!', 'success');
+async function clearAllData(confirmFirst = true) {
+    const confirmed = confirmFirst 
+        ? confirm('Are you sure you want to clear all wallpaper and category data? This action cannot be undone.') 
+        : true;
+
+    if (confirmed) {
+        try {
+            const deleteCollection = async (collectionPath) => {
+                const snapshot = await db.collection(collectionPath).get();
+                if (snapshot.empty) return;
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+            };
+
+            await Promise.all([
+                deleteCollection('wallpapers'),
+                deleteCollection('categories')
+            ]);
+            
+            if (confirmFirst) {
+                showMessage('All data cleared successfully!', 'success');
+            }
+        } catch (error) {
+            console.error("Error clearing data:", error);
+            if (confirmFirst) {
+                showMessage('Error clearing data.', 'error');
+            }
+        }
     }
 }
 
@@ -797,7 +784,7 @@ style.textContent = `
         background: #e2e3e5;
         color: #383d41;
     }
-    .category-badge.uncategorized {
+    .category-badge.uncategorized, .category-badge.undefined {
         background: #f8f9fa;
         color: #6c757d;
     }
@@ -822,4 +809,9 @@ style.textContent = `
         font-size: 1.2rem;
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);
+
+function getCategoryDisplayName(categoryName) {
+    const category = categories.find(c => c.name === categoryName);
+    return category ? category.displayName : categoryName;
+} 

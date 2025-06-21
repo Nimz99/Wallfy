@@ -5,22 +5,20 @@ let categories = [];
 // Load wallpapers from Firebase or use default data
 async function loadWallpapers() {
     try {
-        const snapshot = await db.collection('wallpapers').get();
+        const snapshot = await db.collection('wallpapers').orderBy('title').get();
         if (!snapshot.empty) {
-            wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         } else {
             // Load default sample data if no data exists
-            wallpapers = [
+            const defaultWallpapers = [
                 {
-                    id: 1,
                     title: "Mountain Sunset",
                     category: "nature",
                     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample1", // Replace with actual Imgur link
-                    downloadLink: "https://drive.google.com/sample1" // Replace with actual Google Drive link
+                    imgurLink: "https://imgur.com/sample1",
+                    downloadLink: "https://drive.google.com/sample1"
                 },
                 {
-                    id: 2,
                     title: "Abstract Waves",
                     category: "abstract",
                     image: "https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop",
@@ -28,7 +26,6 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample2"
                 },
                 {
-                    id: 3,
                     title: "Minimal Geometry",
                     category: "minimal",
                     image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
@@ -36,7 +33,6 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample3"
                 },
                 {
-                    id: 4,
                     title: "Galaxy Nebula",
                     category: "space",
                     image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
@@ -44,7 +40,6 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample4"
                 },
                 {
-                    id: 5,
                     title: "Forest Path",
                     category: "nature",
                     image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop",
@@ -52,64 +47,15 @@ async function loadWallpapers() {
                     downloadLink: "https://drive.google.com/sample5"
                 },
                 {
-                    id: 6,
                     title: "Colorful Gradient",
                     category: "abstract",
                     image: "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=400&h=300&fit=crop",
                     imgurLink: "https://imgur.com/sample6",
                     downloadLink: "https://drive.google.com/sample6"
-                },
-                {
-                    id: 7,
-                    title: "Clean Lines",
-                    category: "minimal",
-                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample7",
-                    downloadLink: "https://drive.google.com/sample7"
-                },
-                {
-                    id: 8,
-                    title: "Starry Night",
-                    category: "space",
-                    image: "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample8",
-                    downloadLink: "https://drive.google.com/sample8"
-                },
-                {
-                    id: 9,
-                    title: "Ocean Waves",
-                    category: "nature",
-                    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample9",
-                    downloadLink: "https://drive.google.com/sample9"
-                },
-                {
-                    id: 10,
-                    title: "Digital Art",
-                    category: "abstract",
-                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample10",
-                    downloadLink: "https://drive.google.com/sample10"
-                },
-                {
-                    id: 11,
-                    title: "Simple Design",
-                    category: "minimal",
-                    image: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample11",
-                    downloadLink: "https://drive.google.com/sample11"
-                },
-                {
-                    id: 12,
-                    title: "Cosmic Dust",
-                    category: "space",
-                    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=400&h=300&fit=crop",
-                    imgurLink: "https://imgur.com/sample12",
-                    downloadLink: "https://drive.google.com/sample12"
                 }
             ];
             // Save default data to Firebase
-            for (let wallpaper of wallpapers) {
+            for (let wallpaper of defaultWallpapers) {
                 await db.collection('wallpapers').add(wallpaper);
             }
         }
@@ -121,35 +67,31 @@ async function loadWallpapers() {
 // Load categories from Firebase
 async function loadCategories() {
     try {
-        const snapshot = await db.collection('categories').get();
+        const snapshot = await db.collection('categories').orderBy('displayName').get();
         if (!snapshot.empty) {
-            categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         } else {
             // Default categories
-            categories = [
+            const defaultCategories = [
                 {
-                    id: 1,
                     name: 'nature',
                     displayName: 'Nature',
                     icon: 'fas fa-mountain',
                     description: 'Breathtaking landscapes and natural beauty'
                 },
                 {
-                    id: 2,
                     name: 'abstract',
                     displayName: 'Abstract',
                     icon: 'fas fa-palette',
                     description: 'Creative and artistic designs'
                 },
                 {
-                    id: 3,
                     name: 'minimal',
                     displayName: 'Minimal',
                     icon: 'fas fa-circle',
                     description: 'Clean and simple designs'
                 },
                 {
-                    id: 4,
                     name: 'space',
                     displayName: 'Space',
                     icon: 'fas fa-rocket',
@@ -157,7 +99,7 @@ async function loadCategories() {
                 }
             ];
             // Save default categories to Firebase
-            for (let category of categories) {
+            for (let category of defaultCategories) {
                 await db.collection('categories').add(category);
             }
         }
@@ -199,14 +141,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 function setupRealtimeListeners() {
     // Listen for wallpaper changes
     db.collection('wallpapers').onSnapshot((snapshot) => {
-        wallpapers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        wallpapers = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         renderWallpapers();
-        renderFilterButtons();
     });
 
     // Listen for category changes
     db.collection('categories').onSnapshot((snapshot) => {
-        categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        categories = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         renderFilterButtons();
         renderCategoriesSection();
     });
